@@ -64,4 +64,12 @@ def say_hello(request):
 
 
 # get the last 5 orders with their customers and items (incl products)
-queryset=Order.objects.selct_related('customer').prefetch_related('orderitem_set__product').orderby('-placed_at')[0:5]
+# queryset=Order.objects.selct_related('customer').prefetch_related('orderitem_set__product').orderby('-placed_at')[0:5]
+
+
+
+
+# aggrigation
+def say_bye(request):
+    result =Product.objects.filter(collection__id=1).aggregate(count=Count('id'),min_price=Min('unit_price'))
+    return render(request,'hello.html',{'name':'Krishna','result':'result'})
