@@ -1,8 +1,10 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from store.models import Product,OrderItem,Order
-from django.db.models import Q,F
+from store.models import Product,OrderItem,Order,Customer
+from django.db.models import Q,F,Value,Func
 from django.db.models.aggregates import *
+
+from django.db.models.functions import Concat
 
 
 
@@ -73,3 +75,24 @@ def say_hello(request):
 def say_bye(request):
     result =Product.objects.filter(collection__id=1).aggregate(count=Count('id'),min_price=Min('unit_price'))
     return render(request,'hello.html',{'name':'Krishna','result':'result'})
+
+# to add a new column or fucntion in the table we use annotate fuction
+
+# queryset =Customer.objects.annotate(is_new=Value(True))
+
+# concat function
+# full_name=Customer.objects.annotate(full_name=Concat('first_name',value(' '),'last_name'))
+def concating(request):
+    full_name=Customer.objects.annotate(full_name=Concat('first_name',Value(' '),'last_name'))
+    # full_name2=Customer.objects.annotate(full_name=Func(F('first_name'),Value(' '),F('last_name'),function'CONCAT'))
+    return render(request,'hello.html',{'name':'Krishna','result':'full_name'})
+
+
+
+
+
+
+# order_by arranging
+def grouping(request):
+    queryset=Customer.objects.annotate(orders_count=Count('order'))
+    return render(request,'hello.html',{'name':'Krishna','result':'full_name'})
