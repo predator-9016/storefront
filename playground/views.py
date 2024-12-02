@@ -1,11 +1,14 @@
+from django.forms import DecimalField
 from django.shortcuts import render
 from django.http import HttpResponse
-from store.models import Product,OrderItem,Order,Customer
-from django.db.models import Q,F,Value,Func
+from store.models import Product,OrderItem,Order,Customer,Collection
+from django.db.models import Q,F,Value,Func,ExpressionWrapper
 from django.db.models.aggregates import *
 
 from django.db.models.functions import Concat
 
+from django.contrib.contenttypes.models import ContentType
+from tags.models import TaggedItem
 
 
 def say_hello(request):
@@ -96,3 +99,54 @@ def concating(request):
 def grouping(request):
     queryset=Customer.objects.annotate(orders_count=Count('order'))
     return render(request,'hello.html',{'name':'Krishna','result':'full_name'})
+
+
+# Expression Wrapper :- we use this expression wrapper when we have to some arithmetic work
+def expressionWrapper(request):
+    discounted=ExpressionWrapper(F('unit_price')*0.8,output_field=DecimalField())
+    return render(request,'hello.html',{'name':'Krishna','queryset':'discounted'})
+
+
+
+
+#to get content type id
+def contentid(request):
+    TaggedItem.objects.get_tags_for(Product,1) #this will call teh content type class createded in the model
+    return render(request,'hello.html',{'name':'Krishna'})
+
+
+def valuesAssigning(request):
+    collection = Collection()
+    collection.title='video names'
+    collection.featured_product=(Product(pk=1))
+    collection.save()
+    # collection=Collection.objects.create(title='a',featured_product='mobile phones')
+    # Collection.objects.filter(pk=11).update(feature_product=None)#to update this is the optimized technique
+
+
+    #to delete
+    # collection=Collection(pk=11)
+    # collection.delete()# to delete single item by obtaining the id
+    # Collection.objects.filter(id__gt=5).delete() # to delete multiple items
+    
+
+    # the above line is shortcut for the the above 4 lines
+
+
+from django.db import transaction
+
+# @transaction.atomic() # for ful fuction to be part of transation
+# def transactional(request):
+#     order=Order()
+#     order.customer_id=1
+#     order.save()
+
+    # with transaction.atomic(): # for only some part
+#     item=OrderItem()
+#     item.order =order
+#     item.product_id=1
+#     item.quantity=1
+#     item.unit_price=10
+#     item.save()
+#     return render
+
