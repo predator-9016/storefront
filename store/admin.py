@@ -10,6 +10,16 @@ from django.urls import reverse #for setting up the urls
 
 @admin.register(models.Product)
 class ProductAdmin(admin.ModelAdmin):
+    # fields=['title','slug'] this will show what we have to show while adding in the admin page
+    # exclude=['title','slug']#this would be excluded while adding the elements in the data field
+    # readonly_fields=['title']# this will make the title to read only field
+
+    autocomplete_fields=['collection']#we can search the collection
+    prepopulated_fields={ # it will automatically populate the slug while giving the title
+        'slug':['title']
+    }
+
+    actions=['clear_inventory']
     list_display = ('title','unit_price','inventory_status','collection_title')
     list_editable=['unit_price']
     list_per_page=10
@@ -25,12 +35,23 @@ class ProductAdmin(admin.ModelAdmin):
     def collection_title(self,product):# joining the two tables and displaying the particular table
         return product.collection.title
 
+    @admin.action(description='Clear Inventory')
+    def clear_inventory(self,request,queryset):
+        updated_count= queryset.update(inventory=0)
+        self.message_user(
+            request,
+            f'{updated_count} products were sussessfully Cleared & Upadated ')
+
+
+
+
 
 @admin.register(models.Customer)
 class CustomerAdmin(admin.ModelAdmin):
     list_display = ('first_name','last_name','membership','customer_orders')
     list_editable=['membership']
-    list_per_page=10
+    list_per_page=25
+    
     ordering=['first_name','last_name']
     search_fields=['first_name__istartswith','last_name__istartswith']#starts with is used to give the result that starts with the serach letter, i is used for making insesitive
 
@@ -44,14 +65,15 @@ class CustomerAdmin(admin.ModelAdmin):
         return super().get_queryset(request).annotate(
             customer_orders=Count('order')
         )
-
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
 
 
 @admin.register(models.Order)
 class OrdersAdmin(admin.ModelAdmin):
     list_display = ('customer_name', 'id', 'placed_at', 'payment_status', 'customer_membership')
     list_per_page=25
-    list
+    autocomplete_fields=['customer']
     list_select_related=['customer']
 
     @admin.display(ordering='customer__first_name')
@@ -65,11 +87,12 @@ class OrdersAdmin(admin.ModelAdmin):
 
 
 
-    
+
 
 @admin.register(models.Collection)
 class CollectionAdmin(admin.ModelAdmin):
     list_display=['title','products_count']
+    search_fields=['title']#this is written that we can search from any other area
 
     @admin.display(ordering='products_count')
     def products_count(self,collection):
