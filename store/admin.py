@@ -18,7 +18,7 @@ class ProductAdmin(admin.ModelAdmin):
     prepopulated_fields={ # it will automatically populate the slug while giving the title
         'slug':['title']
     }
-
+    search_fields=['title']
     actions=['clear_inventory']
     list_display = ('title','unit_price','inventory_status','collection_title')
     list_editable=['unit_price']
@@ -69,11 +69,18 @@ class CustomerAdmin(admin.ModelAdmin):
         return f"{self.first_name} {self.last_name}"
 
 
+class OrderItemInline(admin.TabularInline):
+    autocomplete_fields=['product']
+    model=models.OrderItem
+    extra=0
+
+
 @admin.register(models.Order)
 class OrdersAdmin(admin.ModelAdmin):
+    autocomplete_fields=['customer']
+    inlines=[OrderItemInline]
     list_display = ('customer_name', 'id', 'placed_at', 'payment_status', 'customer_membership')
     list_per_page=25
-    autocomplete_fields=['customer']
     list_select_related=['customer']
 
     @admin.display(ordering='customer__first_name')
