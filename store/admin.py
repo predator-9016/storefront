@@ -30,20 +30,20 @@ class ProductAdmin(admin.ModelAdmin):
 class CustomerAdmin(admin.ModelAdmin):
     list_display = ('first_name','last_name','membership','customer_orders')
     list_editable=['membership']
-    ordering=['first_name','last_name']
     list_per_page=10
+    ordering=['first_name','last_name']
+    search_fields=['first_name__istartswith','last_name__istartswith']#starts with is used to give the result that starts with the serach letter, i is used for making insesitive
 
     @admin.display(ordering='customer_orders')
     def customer_orders(self,customer):
-        return customer.customer_orders
+        url=(reverse('admin:store_order_changelist') + '?' + urlencode({'customer_id':str(customer.id)})) #store is the app name, order indicates that we are going to see the order, changelist is used to open the page that will open 
+        return format_html('<a href="{}">{}<a/>',url,customer.customer_orders)
+
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(
             customer_orders=Count('order')
         )
-
-
-
 
 
 
