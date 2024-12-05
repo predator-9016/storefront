@@ -1,11 +1,14 @@
 from django.contrib import admin
 from .models import *
+from tags.models import *
 from . import models
 from django.db.models import Count#this is used to find the count of some..
 from django.utils.html import format_html,urlencode #for writting some html code like giving link we have to give html code
 from django.urls import reverse #for setting up the urls
-
+from django.contrib.contenttypes.admin import GenericTabularInline
 # Register your models here.
+
+
 
 
 @admin.register(models.Product)
@@ -20,6 +23,7 @@ class ProductAdmin(admin.ModelAdmin):
     }
     search_fields=['title']
     actions=['clear_inventory']
+    # inlines=[TagInline]
     list_display = ('title','unit_price','inventory_status','collection_title')
     list_editable=['unit_price']
     list_per_page=10
