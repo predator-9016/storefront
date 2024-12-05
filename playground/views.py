@@ -36,7 +36,7 @@ def say_hello(request):
 
 
 #sorting the data 
-# queryset=Product.objects.order_by('unit_price',-title').reverse()
+# queryset=Product.objects.order_by('unit_price','-title').reverse()
 #reverse is used to reverse the complete result of what we would be getting in the query set
 # using - in front of the title to descendig order
 

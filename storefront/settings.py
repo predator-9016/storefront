@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.sessions',
     'django.contrib.staticfiles',
+    'rest_framework',
     'playground',
     # 'debug_toolbar',
     'store',
@@ -89,7 +90,7 @@ WSGI_APPLICATION = 'storefront.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'storefront',
+        'NAME': 'storefront2',
         'USER': 'root',
         'PASSWORD': 'Krishna@2005',
         'HOST': 'localhost',
@@ -139,3 +140,8 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+#This will convert the string to decimal which should be represented in decimal
+REST_FRAMEWORK ={
+    'COERCE_DECIMAL_TO_STRING':False
+}

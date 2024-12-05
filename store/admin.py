@@ -22,7 +22,7 @@ class ProductAdmin(admin.ModelAdmin):
         'slug':['title']
     }
     search_fields=['title']
-    actions=['clear_inventory']
+    actions=['clear_inventory']#new actions if want to add any
     # inlines=[TagInline]
     list_display = ('title','unit_price','inventory_status','collection_title')
     list_editable=['unit_price']
