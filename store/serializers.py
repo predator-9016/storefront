@@ -7,7 +7,9 @@ from store.models import Product,Collection
 class CollectionSerializer(serializers.ModelSerializer):
     class Meta:
         model=Collection
-        fields=['id','title']
+        fields=['id','title','products_count']
+    
+    products_count=serializers.IntegerField()
 
     # id = serializers.IntegerField()
     # title= serializers.CharField(max_length=255)
@@ -18,7 +20,7 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         #this will call from the model of the product & we dont have to write more no of codes
         model = Product
-        fields = ['id','title','price','price_with_tax','collection']
+        fields = ['id','title','description','slug','inventory','price','price_with_tax','collection']
         # fields='__all__' for getting all from the model class
 
 
@@ -40,3 +42,10 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def calculate_tax(self,product:Product):
         return product.unit_price*Decimal(1.1)
+    
+    # def validate(self,data):
+    #     if data['password']!= data['confirm_password']:
+    #         return serializers.ValidationError('Passwords do not match')
+    #     return data
+
+
