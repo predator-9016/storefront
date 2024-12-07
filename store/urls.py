@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path('products/', views.product_list),
     path('products/<int:id>/', views.product_detail),#to get only integer values
-    path('collections/<int:pk>/', views.collection_detail,name='collection_detail')#to get only integer values
-
+    path('collections/<int:pk>/', views.collection_detail,name='collection_detail'),#to get only integer values
+    path('collections/',views.collection_list)
 ]
+
