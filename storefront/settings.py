@@ -144,5 +144,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #This will convert the string to decimal which should be represented in decimal
 REST_FRAMEWORK ={
-    'COERCE_DECIMAL_TO_STRING':False
+    'COERCE_DECIMAL_TO_STRING':False,
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    # 'PAGE_SIZE':10
+    # WE WOULD MAKE ANOTER FILE IN STORE FOR PRODUCTS CLASS , BECAUSE WE ONLY WANT PAGINATION TO BE APPLIED THERE
 }
