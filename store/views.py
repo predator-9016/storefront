@@ -7,7 +7,7 @@ from rest_framework.response    import Response
 from rest_framework.viewsets    import ModelViewSet,GenericViewSet#shortcut for all 
 from rest_framework import status
 from .models        import OrderItem, Product,Collection,Review,Cart,CartItem
-from .serializers   import ProductSerializer,CollectionSerializer,ReviewSerializer,CartSerializer,CartItemSerializer,AddCartItemSeializer
+from .serializers   import ProductSerializer,CollectionSerializer,ReviewSerializer,CartSerializer,CartItemSerializer,AddCartItemSeializer,UpdateCartItemSerializer
 from .filters       import ProductFilter
 from .pagination    import DefaultPagination
 
@@ -65,12 +65,15 @@ class CartViewSet(CreateModelMixin,GenericViewSet,RetrieveModelMixin,DestroyMode
 
 #as we want to get the cart items by its id only not all carti items must be display therfore we would use queryset to obtain particular id query set
 class CartItemViewSet(ModelViewSet):
+    http_method_names=['get','post','patch','delete']#all must be in lower case
     # queryset=CartItem.objects.all()
     serializer_class=CartItemSerializer
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
             return AddCartItemSeializer
+        elif self.request.method == 'PATCH':
+            return UpdateCartItemSerializer
         return CartItemSerializer
     
     def get_serializer_context(self):
