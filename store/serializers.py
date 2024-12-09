@@ -78,9 +78,9 @@ class CartItemSerializer(serializers.ModelSerializer):
 class CartSerializer(serializers.ModelSerializer):
     id=serializers.UUIDField(read_only=True)#as we dont want id we just want empty object when creting therefore making it to readonly field
     items=CartItemSerializer(many=True,read_only=True)#as we dont want to create items
-    total_price=serializers.SerializerMethodField()
+    total_price=serializers.SerializerMethodField()#method field as we are going to get by creating the method
 
-    def get_total_price(self,cart):
+    def get_total_price(self,cart):#totalprice method
         return sum([item.quantity * item.product.unit_price for item in cart.items.all()])
     
     class Meta:
@@ -102,11 +102,11 @@ class AddCartItemSeializer(serializers.ModelSerializer):
         quantity=self.validated_data['quantity']
 
         try:#Updating an existing item
-            cart_item=CartItem.objects.get(cart_id=cart_id ,product_id=product_id)
+            cart_item=CartItem.objects.get(cart_id=cart_id ,product_id=product_id)#if the cartid and product id is same just increasing the quantity
             cart_item.quantity+=quantity
             cart_item.save()
             self.instance=cart_item
-        except CartItem.DoesNotExist:#Creating a new item
+        except CartItem.DoesNotExist:#Creating a new item,if not same creating a new cart item
             self.instance=CartItem.objects.create(cart_id=cart_id,**self.validated_data)#unpacking all the validated data
     
         return self.instance
@@ -114,3 +114,8 @@ class AddCartItemSeializer(serializers.ModelSerializer):
     class Meta:
         model=CartItem
         fields=['id','product_id','quantity']
+
+class UpdateCartItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=CartItem
+        fields=['quantity']
