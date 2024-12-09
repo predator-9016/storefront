@@ -2,11 +2,12 @@ from django.db.models import Count
 from django.shortcuts import *#get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters     import SearchFilter,OrderingFilter
-from rest_framework.response    import Response
-from rest_framework.viewsets    import ModelViewSet #shortcut for all 
+from rest_framework.mixins      import CreateModelMixin,RetrieveModelMixin,DestroyModelMixin
+from rest_framework.response    import Response 
+from rest_framework.viewsets    import ModelViewSet,GenericViewSet#shortcut for all 
 from rest_framework import status
-from .models        import OrderItem, Product,Collection,Review
-from .serializers   import ProductSerializer,CollectionSerializer,ReviewSerializer
+from .models        import OrderItem, Product,Collection,Review,Cart,CartItem
+from .serializers   import ProductSerializer,CollectionSerializer,ReviewSerializer,CartSerializer,CartItemSerializer,AddCartItemSeializer
 from .filters       import ProductFilter
 from .pagination    import DefaultPagination
 
@@ -55,6 +56,175 @@ class ReviewViewSet(ModelViewSet):
 
     def get_serializer_context(self):
         return {'product_id':self.kwargs['product_pk']}
+
+#as we donot want to show the id therefore we are not using model view set therefore to to restrict get we use differently all arguments
+class CartViewSet(CreateModelMixin,GenericViewSet,RetrieveModelMixin,DestroyModelMixin):
+    queryset=Cart.objects.prefetch_related('items__product').all() #using prefetch beacuse a cart can have multiple items if only have we use select related where we have foreign key to many relationship
+    serializer_class=CartSerializer
+
+
+#as we want to get the cart items by its id only not all carti items must be display therfore we would use queryset to obtain particular id query set
+class CartItemViewSet(ModelViewSet):
+    # queryset=CartItem.objects.all()
+    serializer_class=CartItemSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return AddCartItemSeializer
+        return CartItemSerializer
+    
+    def get_serializer_context(self):
+        return {'cart_id':self.kwargs['cart_pk']}
+
+    def get_queryset(self):
+        return CartItem.objects.filter(cart_id=self.kwargs['cart_pk']).select_related('product')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #can be replaced by using django filtering
