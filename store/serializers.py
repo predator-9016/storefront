@@ -1,7 +1,7 @@
 from decimal import Decimal
 from rest_framework import serializers
 
-from store.models import Product,Collection,Review
+from store.models import Product,Collection,Review,Cart,CartItem
 
 
 class CollectionSerializer(serializers.ModelSerializer):
@@ -57,3 +57,60 @@ class ReviewSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         product_id=self.context['product_id']
         return Review.objects.create(product_id=product_id,**validated_data)
+    
+
+
+class SimpleProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Product
+        fields=['id','title','unit_price']
+
+class CartItemSerializer(serializers.ModelSerializer):
+    product=SimpleProductSerializer()
+    total_price=serializers.SerializerMethodField()
+
+    def get_total_price(self,cart_item:CartItem):
+        return cart_item.quantity * cart_item.product.unit_price
+    class Meta:
+        model=CartItem
+        fields=['id','product','quantity','total_price']
+
+class CartSerializer(serializers.ModelSerializer):
+    id=serializers.UUIDField(read_only=True)#as we dont want id we just want empty object when creting therefore making it to readonly field
+    items=CartItemSerializer(many=True,read_only=True)#as we dont want to create items
+    total_price=serializers.SerializerMethodField()
+
+    def get_total_price(self,cart):
+        return sum([item.quantity * item.product.unit_price for item in cart.items.all()])
+    
+    class Meta:
+        model=Cart
+        fields=['id','items','total_price']
+
+class AddCartItemSeializer(serializers.ModelSerializer):
+    product_id=serializers.IntegerField()
+
+    def validate_product_id(self,value):
+        if not Product.objects.filter(pk=value).exists():#if product not found , conditon will become true and will raise the error
+            raise serializers.ValidationError('Product does not exist of the given id')
+        return value#if found return the value means id
+
+#behing the scene there is serializer isvalid then we can get it from validated data currently we are inside the serializer class so we will access through self.validate data
+    def save(self, **kwargs):
+        cart_id=self.context['cart_id']
+        product_id=self.validated_data['product_id']
+        quantity=self.validated_data['quantity']
+
+        try:#Updating an existing item
+            cart_item=CartItem.objects.get(cart_id=cart_id ,product_id=product_id)
+            cart_item.quantity+=quantity
+            cart_item.save()
+            self.instance=cart_item
+        except CartItem.DoesNotExist:#Creating a new item
+            self.instance=CartItem.objects.create(cart_id=cart_id,**self.validated_data)#unpacking all the validated data
+    
+        return self.instance
+
+    class Meta:
+        model=CartItem
+        fields=['id','product_id','quantity']
