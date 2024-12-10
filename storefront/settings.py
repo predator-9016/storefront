@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -153,10 +154,24 @@ REST_FRAMEWORK ={
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     # 'PAGE_SIZE':10
     # WE WOULD MAKE ANOTER FILE IN STORE FOR PRODUCTS CLASS , BECAUSE WE ONLY WANT PAGINATION TO BE APPLIED THERE
+    # 'DEFAULT_PERMISSION_CLASSES':[
+    #     'rest_framework.permissions.IsAuthenticated'
+    # ]
+    #method to allow the only authenticated user can access ,we can check similar in django restframework permission documentary
 }
 
 AUTH_USER_MODEL = 'core.User'
 
-SIMPLE_JWT = {
-    'AUTH_HEADER_TYPES': ('JWT',),
+
+DJOSER={
+    'SERIALIZERS':{
+        'user_create':'core.serializers.UserCreateSerializer',
+        'current_user':'core.serializers.UserSerializer'
+    }
 }
+SIMPLE_JWT={
+    'AUTH_HEADER_TYPES': ('JWT',),
+    'ACCESS_TOKEN_LIFETIME':timedelta(days=1)
+}
+
+#http://127.0.0.1:8000/auth/jwt/create/ to create new access 

@@ -2,14 +2,17 @@ from django.db.models import Count
 from django.shortcuts import *#get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters     import SearchFilter,OrderingFilter
-from rest_framework.mixins      import CreateModelMixin,RetrieveModelMixin,DestroyModelMixin
+from rest_framework.mixins      import CreateModelMixin,RetrieveModelMixin,DestroyModelMixin,UpdateModelMixin
 from rest_framework.response    import Response 
 from rest_framework.viewsets    import ModelViewSet,GenericViewSet#shortcut for all 
+from rest_framework.decorators  import action
+from rest_framework.permissions import IsAuthenticated,AllowAny,IsAdminUser,DjangoModelPermissions
 from rest_framework import status
-from .models        import OrderItem, Product,Collection,Review,Cart,CartItem
-from .serializers   import ProductSerializer,CollectionSerializer,ReviewSerializer,CartSerializer,CartItemSerializer,AddCartItemSeializer,UpdateCartItemSerializer
+from .models        import OrderItem, Product,Collection,Review,Cart,CartItem,Customer
+from .serializers   import ProductSerializer,CollectionSerializer,ReviewSerializer,CartSerializer,CartItemSerializer,AddCartItemSeializer,UpdateCartItemSerializer,CustomerSerializer
 from .filters       import ProductFilter
 from .pagination    import DefaultPagination
+from .permissions   import IsAdminOrReadOnly,FullDjangoModelPermissions,ViewCustomerHistoryPermission
 
 #unused imports.........
 # from django.http import HttpResponse
@@ -27,6 +30,7 @@ class ProductViewSet(ModelViewSet):
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend,SearchFilter,OrderingFilter]#types of filter backend that are going to be applied
     filterset_class =ProductFilter
+    permission_classes=[IsAdminOrReadOnly]
     pagination_class = DefaultPagination
     # pagination_class=PageNumberPagination  # WE DONT HAVE DO DECLARE PAGINATION IF WE HAVE DECLARE GLOBALLY IN SETTINGS FILE
     search_fields=['name','description','collection__title']#search fields
@@ -44,6 +48,7 @@ class ProductViewSet(ModelViewSet):
 class CollectionViewSet(ModelViewSet):
     queryset=Collection.objects.annotate(products_count=Count('products')).all()
     serializer_class=CollectionSerializer
+    permission_classes=[IsAdminOrReadOnly]
 
     def destroy(self, request, *args, **kwargs):
         if Product.objects.filter(collection_id=kwargs['pk']).count()>0:
@@ -82,7 +87,35 @@ class CartItemViewSet(ModelViewSet):
     def get_queryset(self):
         return CartItem.objects.filter(cart_id=self.kwargs['cart_pk']).select_related('product')
 
+class CustomerViewSet(CreateModelMixin,RetrieveModelMixin,UpdateModelMixin,GenericViewSet):
+    queryset=Customer.objects.all()
+    serializer_class=CustomerSerializer
+    permission_classes=[FullDjangoModelPermissions]
 
+    # def get_permissions(self):
+    #     if self.request.method =='GET':
+    #         return [AllowAny()]
+    #     return[IsAdminUser]
+    @action(detail=True,permission_classes=[ViewCustomerHistoryPermission])
+    def history(self,request,pk):
+        return Response('ok')
+
+
+    #Getting Current User
+    @action(detail=False,methods=['GET','PUT'],permission_classes=[IsAuthenticated])
+    def me(self,request):
+        #first value is customer object and second value is the boolean 
+        (customer,created)=Customer.objects.get_or_create(user_id=request.user.id)
+
+
+        if request.method == 'GET':
+            serializer = CustomerSerializer(customer)
+            return Response(serializer.data)
+        elif request.method == 'PUT':
+            serializer=CustomerSerializer(customer,data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
 
 
 
