@@ -11,8 +11,8 @@ class Promotion(models.Model):
 
 class Collection(models.Model):
     title = models.CharField(max_length=255)
-    featured_product = models.ForeignKey(
-        'Product', on_delete=models.SET_NULL, null=True, related_name='+')
+    featured_product = models.ForeignKey(#related_name='+' will stop from making the reverse relatinship hence no collection would be created in Product
+        'Product', on_delete=models.SET_NULL, null=True, related_name='+')#here we are defining 'Product' because product module is present after collection
     
     def __str__(self) -> str:
         return self.title
@@ -49,8 +49,8 @@ class Customer(models.Model):
     phone = models.CharField(max_length=255)
     birth_date = models.DateField(null=True)
     membership = models.CharField(
-        max_length=1, choices=MEMBERSHIP_CHOICES, default=MEMBERSHIP_BRONZE)
-    user=models.OneToOneField(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+        max_length=1, choices=MEMBERSHIP_CHOICES, default=MEMBERSHIP_BRONZE)#choices will set the choice field
+    user=models.OneToOneField(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)#it will point to setting and there we have given user in core app so it will there
 
     @admin.display(ordering='user__first_name')
     def first_name(self):
@@ -62,16 +62,13 @@ class Customer(models.Model):
     class Meta:
         ordering =['user__first_name','user__last_name']
         permissions=[
-            ('view_history', 'Can view history'),
+            ('view_history', 'Can view history'),#this is used to give addition permission allocation in  Group to the user
         ]
-    
-
 
     def __str__(self):
         return f'{self.user.first_name} {self.user.last_name}'
 
-    class Meta:
-        ordering =['user__first_name','user__last_name']
+
 
 class Order(models.Model):
     PAYMENT_STATUS_PENDING = 'P'
