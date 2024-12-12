@@ -8,8 +8,8 @@ from rest_framework.viewsets    import ModelViewSet,GenericViewSet#shortcut for 
 from rest_framework.decorators  import action
 from rest_framework.permissions import IsAuthenticated,AllowAny,IsAdminUser,DjangoModelPermissions
 from rest_framework import status
-from .models        import OrderItem, Product,Collection,Review,Cart,CartItem,Customer
-from .serializers   import ProductSerializer,CollectionSerializer,ReviewSerializer,CartSerializer,CartItemSerializer,AddCartItemSeializer,UpdateCartItemSerializer,CustomerSerializer
+from .models        import OrderItem, Product,Collection,Review,Cart,CartItem,Customer,Order
+from .serializers   import ProductSerializer,CollectionSerializer,ReviewSerializer,CartSerializer,CartItemSerializer,AddCartItemSeializer,UpdateCartItemSerializer,CustomerSerializer,OrderSerializer
 from .filters       import ProductFilter
 from .pagination    import DefaultPagination
 from .permissions   import IsAdminOrReadOnly,FullDjangoModelPermissions,ViewCustomerHistoryPermission
@@ -29,12 +29,12 @@ class ProductViewSet(ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend,SearchFilter,OrderingFilter]#types of filter backend that are going to be applied
-    filterset_class =ProductFilter
+    filterset_class =ProductFilter#its for maiking filter in api 
     permission_classes=[IsAdminOrReadOnly]
-    pagination_class = DefaultPagination
+    pagination_class = DefaultPagination#pagination can be done from Settings file or by maually importing as done in pagination.py
     # pagination_class=PageNumberPagination  # WE DONT HAVE DO DECLARE PAGINATION IF WE HAVE DECLARE GLOBALLY IN SETTINGS FILE
-    search_fields=['name','description','collection__title']#search fields
-    ordering_fields=['unit_price','last_update']#ordering fields
+    search_fields=['name','description','collection__title']#search fields for api
+    ordering_fields=['unit_price','last_update']#ordering fields,Format of Ordering
     
 
     def get_serializer_context(self):
@@ -117,8 +117,18 @@ class CustomerViewSet(CreateModelMixin,RetrieveModelMixin,UpdateModelMixin,Gener
             serializer.save()
             return Response(serializer.data)
 
+class OrderViewset(ModelViewSet):
 
+    def get_queryset(self):
+        user=self.request.user
+        if user.is_staff:
+            return Order.objects.all()
+        
+        (customer_id,created) = Customer.objects.only('id').get_or_create(user_id=user.id) #get_or_create uses two values therfore we have to make it in bracket
+        return Order.objects.filter(customer_id=customer_id)
 
+    serializer_class=OrderSerializer
+    permission_classes=[IsAuthenticated]
 
 
 
