@@ -13,31 +13,31 @@ from django.contrib.contenttypes.admin import GenericTabularInline
 
 @admin.register(models.Product)
 class ProductAdmin(admin.ModelAdmin):
-    # fields=['title','slug'] this will show what we have to show while adding in the admin page
-    # exclude=['title','slug']#this would be excluded while adding the elements in the data field
-    # readonly_fields=['title']# this will make the title to read only field
 
     autocomplete_fields=['collection']#we can search the collection
     prepopulated_fields={ # it will automatically populate the slug while giving the title
         'slug':['title']
     }
-    search_fields=['title']
     actions=['clear_inventory']#new actions if want to add any
     # inlines=[TagInline]
-    list_display = ('title','unit_price','inventory_status','collection_title')
-    list_editable=['unit_price']
-    list_per_page=10
+    search_fields=['title']#search field that , how can we found the user
+    list_display = ('title','unit_price','inventory','inventory_status','collection_title')# this are the lists that are going to be displayed
+    list_editable=['unit_price']#This will make editable while showing during the admin page, we not need to go inside
+    list_per_page=10#how much data will be shown in the page
 
+#format of addning new column, its for the column of inventory_status
     @admin.display(ordering='inventory')
-    def inventory_status(self , product):#format of addning new column
+    def inventory_status(self , product):
         if product.inventory < 10:
             return 'LOW'
         return 'OK'
     
     list_select_related=['collection']#this is used to load the data before executing which will reduce the queries and efficiency of the loading
+    #hence we need to grab the collection__title from the collection model so we are preloading, collection model so that it doesnot take time while loading the data , we donot provide the colleciton than the loading time would be taken
 
     def collection_title(self,product):# joining the two tables and displaying the particular table
         return product.collection.title
+
 
     @admin.action(description='Clear Inventory')
     def clear_inventory(self,request,queryset):
@@ -61,6 +61,7 @@ class CustomerAdmin(admin.ModelAdmin):
 
     @admin.display(ordering='customer_orders')
     def customer_orders(self,customer):
+        #adding link so that if clicked on the orders all the orders list would be displayed
         url=(reverse('admin:store_order_changelist') + '?' + urlencode({'customer_id':str(customer.id)})) #store is the app name, order indicates that we are going to see the order, changelist is used to open the page that will open 
         return format_html('<a href="{}">{}<a/>',url,customer.customer_orders)
 
@@ -73,6 +74,7 @@ class CustomerAdmin(admin.ModelAdmin):
         return f"{self.first_name} {self.last_name}"
 
 
+# this model would display the result in tabular form
 class OrderItemInline(admin.TabularInline):
     autocomplete_fields=['product']
     model=models.OrderItem
@@ -82,7 +84,7 @@ class OrderItemInline(admin.TabularInline):
 @admin.register(models.Order)
 class OrdersAdmin(admin.ModelAdmin):
     autocomplete_fields=['customer']
-    inlines=[OrderItemInline]
+    inlines=[OrderItemInline]#to show the result in tabular form
     list_display = ('customer_name', 'id', 'placed_at', 'payment_status', 'customer_membership')
     list_per_page=25
     list_select_related=['customer']
