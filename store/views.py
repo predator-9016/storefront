@@ -37,6 +37,7 @@ class ProductViewSet(ModelViewSet):
     ordering_fields=['unit_price','last_update']#ordering fields,Format of Ordering
     
 
+    
     def get_serializer_context(self):
         return {'request':self.request}
     
@@ -50,6 +51,7 @@ class CollectionViewSet(ModelViewSet):
     serializer_class=CollectionSerializer
     permission_classes=[IsAdminOrReadOnly]
 
+    #if collection is linked with proucts, this fucntion will check that if there is product associated by the collection by checking count if not u can delete else not
     def destroy(self, request, *args, **kwargs):
         if Product.objects.filter(collection_id=kwargs['pk']).count()>0:
             return Response({'error':'Collection cannot be deleted because its included in one or more products'},status.HTTP_204_NO_CONTENT)
