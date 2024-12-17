@@ -66,10 +66,11 @@ class SimpleProductSerializer(serializers.ModelSerializer):
         fields=['id','title','unit_price']
 
 class CartItemSerializer(serializers.ModelSerializer):
-    product=SimpleProductSerializer()
-    total_price=serializers.SerializerMethodField()
+    product=SimpleProductSerializer()#for displaying only some part of the product details
+    total_price=serializers.SerializerMethodField()#method field indicates that it would get output from the methods
 
-    def get_total_price(self,cart_item:CartItem):
+    #method to find the total price the fields used are present on cart items
+    def get_total_price(self,cart_item:CartItem):#get and then variable name is used to get the variable output
         return cart_item.quantity * cart_item.product.unit_price
     class Meta:
         model=CartItem
@@ -181,12 +182,3 @@ class CreateOrderSerializer(serializers.Serializer):
             OrderItem.objects.bulk_create(order_items)
             Cart.objects.filter(pk=carts_id).delete()
             return order
-            
-
-            
-            
-            
-            
-            
-
-        
