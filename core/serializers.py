@@ -2,7 +2,7 @@ from djoser.serializers import UserSerializer as BaseUserSerializer, UserCreateS
 from rest_framework import serializers
 
 class UserCreateSerializer(BaseUserCreateSerializer):
-    birt_date=serializers.DateField()
+    # birth_date=serializers.DateField()
     class Meta(BaseUserCreateSerializer.Meta):
         fields=['id','username','password','email','first_name','last_name']
 
