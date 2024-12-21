@@ -120,7 +120,7 @@ class CustomerViewSet(CreateModelMixin,RetrieveModelMixin,UpdateModelMixin,Gener
             return Response(serializer.data)
 
 class OrderViewset(ModelViewSet):
-    http_method_names=['get','patch','delete','head','options']
+    http_method_names=['get','post','patch','delete','head','options']
     # serializer_class=OrderSerializer
     def get_permissions(self):#making permission that only authenticated user can do this stuff
         if self.request.method in ['PATCH','DELETE']:
@@ -141,9 +141,6 @@ class OrderViewset(ModelViewSet):
         order=serialzer.save()
         serialzer=OrderSerializer(order)
         return Response(serialzer.data)
-
-
-
 
 #commenting as we are not using mixin for getting the context
     # def get_serializer_context(self):
