@@ -8,8 +8,8 @@ from rest_framework.viewsets    import ModelViewSet,GenericViewSet#shortcut for 
 from rest_framework.decorators  import action
 from rest_framework.permissions import IsAuthenticated,AllowAny,IsAdminUser,DjangoModelPermissions
 from rest_framework import status
-from .models        import OrderItem, Product,Collection,Review,Cart,CartItem,Customer,Order
-from .serializers   import ProductSerializer,CollectionSerializer,ReviewSerializer,CartSerializer,CartItemSerializer,AddCartItemSeializer,UpdateCartItemSerializer,CustomerSerializer,OrderSerializer,CreateOrderSerializer,UpdateOrderSerializer
+from .models        import OrderItem, Product,Collection,Review,Cart,CartItem,Customer,Order,ProductImage
+from .serializers   import ProductSerializer,CollectionSerializer,ReviewSerializer,CartSerializer,CartItemSerializer,AddCartItemSeializer,UpdateCartItemSerializer,CustomerSerializer,OrderSerializer,CreateOrderSerializer,UpdateOrderSerializer,ProductImagesSerializer
 from .filters       import ProductFilter
 from .pagination    import DefaultPagination
 from .permissions   import IsAdminOrReadOnly,FullDjangoModelPermissions,ViewCustomerHistoryPermission
@@ -26,7 +26,7 @@ from .permissions   import IsAdminOrReadOnly,FullDjangoModelPermissions,ViewCust
 # Create your views here.
 
 class ProductViewSet(ModelViewSet):
-    queryset = Product.objects.all()
+    queryset = Product.objects.prefetch_related('images').all()
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend,SearchFilter,OrderingFilter]#types of filter backend that are going to be applied
     filterset_class =ProductFilter#its for maiking filter in api 
@@ -157,8 +157,20 @@ class OrderViewset(ModelViewSet):
 
 
 
+class ProductImageViewSet(ModelViewSet):
+    serializer_class=ProductImagesSerializer
+    # queryset=Product.objects.all() #as we donot wnat to return all the products we want to return only the images of the product with the particular id
+    # we will use queryset to get the images of the product with the particular id
+    # we want to take the product id from the url therefore we willuse product_id=self.kwargs['product_pk']
 
+    #to get the product id
+    def get_serializer_context(self):
+        return {'product_id':self.kwargs['product_pk']}
 
+    def get_queryset(self):
+        return ProductImage.objects.filter(product_id=self.kwargs['product_pk'])
+        
+    
 
 
 
