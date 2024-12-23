@@ -2,12 +2,23 @@ from django.contrib import admin
 from .models import *
 from tags.models import *
 from . import models
+
 from django.db.models import Count#this is used to find the count of some..
 from django.utils.html import format_html,urlencode #for writting some html code like giving link we have to give html code
 from django.urls import reverse #for setting up the urls
 from django.contrib.contenttypes.admin import GenericTabularInline
 # Register your models here.
 
+
+
+class ProductImageInline(admin.TabularInline):
+    model=models.ProductImage
+    readonly_fields=['thumbnail']
+
+    def thumbnail(self,instance):
+        if instance.image.name != '':
+            return format_html (f'<img src="{instance.image.url}" class="thumbnail" />')
+        return ''
 
 
 
@@ -20,6 +31,7 @@ class ProductAdmin(admin.ModelAdmin):
     }
     actions=['clear_inventory']#new actions if want to add any
     # inlines=[TagInline]
+    inlines=[ProductImageInline]#this is used to show the images in the admin page
     search_fields=['title']#search field that , how can we found the user
     list_display = ('title','unit_price','inventory','inventory_status','collection_title')# this are the lists that are going to be displayed
     list_editable=['unit_price']#This will make editable while showing during the admin page, we not need to go inside
@@ -45,6 +57,11 @@ class ProductAdmin(admin.ModelAdmin):
         self.message_user(
             request,
             f'{updated_count} products were sussessfully Cleared & Upadated ')
+        
+    class Media:
+        css={
+            'all':['store/style.css']
+        }
 
 
 
