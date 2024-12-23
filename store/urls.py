@@ -15,8 +15,12 @@ router.register('carts',views.CartViewSet)
 router.register('customers',views.CustomerViewSet)
 router.register('orders',views.OrderViewset,basename='order')#if query_set is removed and we are using get funciton we have to give base name of the model
 
+
+#base of the product router
 products_router=routers.NestedDefaultRouter(router,'products', lookup='product')
 products_router.register('reviews',views.ReviewViewSet,basename='product-reviews')
+products_router.register('images',views.ProductImageViewSet,basename='product-images') #declaring the nested router on product router
+
 
 carts_router=routers.NestedDefaultRouter(router,'carts',lookup='cart')
 carts_router.register('items',views.CartItemViewSet,basename='cart-items')

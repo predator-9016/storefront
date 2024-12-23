@@ -2,8 +2,9 @@ from decimal import Decimal
 from rest_framework import serializers
 from django.db import transaction
 from .signals import order_created
-from store.models import Product,Collection,Review,Cart,CartItem,Customer,Order,OrderItem
+from store.models import Product,Collection,Review,Cart,CartItem,Customer,Order,OrderItem,ProductImage
 
+#the role of the serializer file is to convert the upcoming data into json dictionary 
 
 class CollectionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,13 +16,25 @@ class CollectionSerializer(serializers.ModelSerializer):
     # id = serializers.IntegerField()
     # title= serializers.CharField(max_length=255)
 
-#the role of the serializer file is to convert the upcoming data into json dictionary 
+
+class ProductImagesSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        product_id=self.context['product_id']
+        return ProductImage.objects.create(product_id=product_id,**validated_data)
+
+    class Meta:
+        model=ProductImage
+        fields=['id','image']
+        # read_only_fields=['id']
+
+
 # class ProductSerializer(serializers.Serializer):
 class ProductSerializer(serializers.ModelSerializer):
+    images=ProductImagesSerializer(many=True,read_only=True)#to get the images of the product
     class Meta:
         #this will call from the model of the product & we dont have to write more no of codes
         model = Product
-        fields = ['id','title','description','slug','inventory','price','price_with_tax','collection']
+        fields = ['id','title','description','slug','inventory','price','price_with_tax','collection','images']
         # fields='__all__' for getting all from the model class
 
 
@@ -184,3 +197,4 @@ class CreateOrderSerializer(serializers.Serializer):
             Cart.objects.filter(pk=carts_id).delete()
             order_created.send_robust(self.__class__,order=order)
             return order
+        

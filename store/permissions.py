@@ -7,7 +7,7 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:#(HEAD,GET,OPTION)
             return True
         return bool(request.user and request.user.is_staff)
-    
+
 
 class FullDjangoModelPermissions(permissions.DjangoModelPermissions):
     def __init__(self)->None:
